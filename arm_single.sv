@@ -161,7 +161,7 @@ module arm(input  logic        clk, reset,
 
   controller c(clk, reset, Instr[31:12], ALUFlags, 
                RegSrc, RegWrite, ImmSrc, 
-               ALUSrc, ALUControl,
+               ALUSrc, MovFlag, ALUControl,
                MemWrite, MemtoReg, PCSrc);
   datapath dp(clk, reset, 
               RegSrc, RegWrite, ImmSrc,
@@ -177,7 +177,7 @@ module controller(input  logic         clk, reset,
                   output logic [1:0]   RegSrc,
                   output logic         RegWrite,
                   output logic [1:0]   ImmSrc,
-                  output logic         ALUSrc, 
+                  output logic         ALUSrc, MovFlag
                   output logic [1:0]   ALUControl,
                   output logic         MemWrite, MemtoReg,
                   output logic         PCSrc);
@@ -187,10 +187,10 @@ module controller(input  logic         clk, reset,
   
   decoder dec(Instr[27:26], Instr[25:20], Instr[15:12],
               FlagW, PCS, RegW, MemW,
-              MemtoReg, ALUSrc, ImmSrc, RegSrc, ALUControl);
+              MemtoReg, ALUSrc, FlagM, ImmSrc, RegSrc, ALUControl);
   condlogic cl(clk, reset, Instr[31:28], ALUFlags,
-               FlagW, PCS, RegW, MemW,
-               PCSrc, RegWrite, MemWrite);
+               FlagW, PCS, RegW, MemW, FlagM
+               PCSrc, RegWrite, MemWrite, MovFlag);
 endmodule
 
 module decoder(input  logic [1:0] Op,
@@ -198,7 +198,7 @@ module decoder(input  logic [1:0] Op,
                input  logic [3:0] Rd,
                output logic [1:0] FlagW,
                output logic       PCS, RegW, MemW,
-               output logic       MemtoReg, ALUSrc,
+               output logic       MemtoReg, ALUSrc, FlagM,
                output logic [1:0] ImmSrc, RegSrc, ALUControl);
 
   logic [9:0] controls;
@@ -229,11 +229,30 @@ module decoder(input  logic [1:0] Op,
   always_comb
     if (ALUOp) begin                 // which DP Instr?
       case(Funct[4:1]) 
-  	    4'b0100: ALUControl = 2'b00; // ADD
-  	    4'b0010: ALUControl = 2'b01; // SUB
-          4'b0000: ALUControl = 2'b10; // AND
-  	    4'b1100: ALUControl = 2'b11; // ORR
-  	    default: ALUControl = 2'bx;  // unimplemented
+  	    4'b0100:  begin
+                    ALUControl = 2'b00; // ADD
+                    FlagM = 1'b0;
+                  end
+  	    4'b0010:  begin
+                    ALUControl = 2'b01; // SUB
+                    FlagM = 1'b0;
+                  end
+        4'b0000:  begin 
+                    ALUControl = 2'b10; // AND
+                    FlagM = 1'b0;
+                  end
+  	    4'b1100:  begin
+                    ALUControl = 2'b11; // ORR
+                    FlagM = 1'b0;
+                  end
+        4'b1101:  begin
+                    ALUControl = 2'bx;  // MOV
+                    FlagM = 1'b1;
+                  end
+  	    default:  begin
+                    ALUControl = 2'bx;  // unimplemented
+                    FlagM = 1'b0;
+                  end
       endcase
       // update flags if S bit is set 
 	// (C & V only updated for arith instructions)
@@ -244,6 +263,7 @@ module decoder(input  logic [1:0] Op,
     end else begin
       ALUControl = 2'b00; // add for non-DP instructions
       FlagW      = 2'b00; // don't update Flags
+      FlagM      = 1'b0;  // use ALUs Result
     end
               
   // PC Logic
@@ -254,8 +274,8 @@ module condlogic(input  logic       clk, reset,
                  input  logic [3:0] Cond,
                  input  logic [3:0] ALUFlags,
                  input  logic [1:0] FlagW,
-                 input  logic       PCS, RegW, MemW,
-                 output logic       PCSrc, RegWrite, MemWrite);
+                 input  logic       PCS, RegW, MemW, FlagM
+                 output logic       PCSrc, RegWrite, MemWrite, MovFlag);
                  
   logic [1:0] FlagWrite;
   logic [3:0] Flags;
