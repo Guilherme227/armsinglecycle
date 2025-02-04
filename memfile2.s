@@ -26,12 +26,17 @@ AROUND:
 	LDR R2, [R0, #96]  	;// R2 = mem[96] = 7
 	MOV R1, #10			;// Teste MOV imediato
 	MOV R6, R1			;// Teste MOV registrador
-	STR R6, [R0, #104]	;// Armazena 10 na memória no endereço 104
 	ADD R15, R15, R0	;// PC <- PC + 8 (skips next)     	         
 	ADD R2, R0, #14    	;// shouldn't happen              	
-	B END             	;// always taken					
+	B CMP_TEST          ;// always taken					
 	ADD R2, R0, #13   	;// shouldn't happen				
   	ADD R2, R0, #10		;// shouldn't happen
+CMP_TEST:
+	CMP R1, #10			;// Compara R1 com 10, Z = 1
+	BEQ CMP_OK			;
+	MOV R1, #99			;// Se não for igual, carrega 99 em R1
+CMP_OK:
+	MOV R1, #20			;// R1 = 20
 END:
 	STR R2, [R0, #100] 	;// mem[100] = 7                  	
 
