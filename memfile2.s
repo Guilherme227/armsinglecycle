@@ -37,7 +37,13 @@ CMP_TEST:
 	MOV R1, #99			;// Se não for igual, carrega 99 em R1
 CMP_OK:
 	MOV R1, #20			;// R1 = 20
+	TST R1, #4			;// AND 20 & 4 = 4
+	BNE TST_OK			;
+	MOV R1, #99			;// Se o teste falhar, carrega 99 em R1
+TST_OK:
+	MOV R1, #50			;// R1 = 50
 END:
+	SUB R0, R15, R15	;// R0 = 0
 	STR R2, [R0, #100] 	;// mem[100] = 7                  	
 
 

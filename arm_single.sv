@@ -260,6 +260,11 @@ module decoder(input  logic [1:0] Op,
                     NoWrite = 1'b1;     // CMP
                     FlagM = 1'b0;
                   end
+        4'b1000:  begin
+                    ALUControl = 2'b10; // AND
+                    NoWrite = 1'b0;     // TST
+                    FlagM = 1'b0;
+                  end
   	    default:  begin
                     ALUControl = 2'bx;  // unimplemented
                     NoWrite = 1'b0;
