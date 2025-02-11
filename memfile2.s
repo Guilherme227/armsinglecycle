@@ -44,7 +44,6 @@ TST_OK:
 	MOV R1, #50			;// R1 = 50
 	EOR R1, R1, R2		;// R1 = R1 XOR R2 (53)
 END:
-	SUB R0, R15, R15	;// R0 = 0
 	STR R2, [R0, #100] 	;// mem[100] = 7                  	
 
 
