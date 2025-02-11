@@ -79,8 +79,11 @@ module testbench();
   logic        clk_1MHz;      // Novo clock (1 MHz)
   logic        reset;
 
-  logic [31:0] WriteData, DataAdr;
+  logic [31:0] WriteData, DataAdr; ReadData, ALUResult;
   logic        MemWrite;
+  logic	       we;
+  logic [31:0] Vin, Vout;
+  logic	       FlagTimer;
 
   // instantiate device to be tested
   top dut(clk, reset, WriteData, DataAdr, MemWrite);
@@ -117,7 +120,14 @@ module testbench();
     end
 endmodule
 
-module timer
+module timer(input  logic clk_1MHz, reset,
+             input  logic WriteData, MemWrite,
+             input  logic Vin,           //tempo a ser contado
+	     output logic Vout,		//tempo restante
+	     output logic FlagTimer);   //flag para timer estourado
+
+
+endmodule
 
 module top(input  logic        clk, reset, 
            output logic [31:0] WriteData, DataAdr, 
