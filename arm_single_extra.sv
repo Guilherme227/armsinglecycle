@@ -120,13 +120,35 @@ module testbench();
     end
 endmodule
 
-module timer(input  logic clk_1MHz, reset,
-             input  logic WriteData, MemWrite,
-             input  logic Vin,           //tempo a ser contado
-	     output logic Vout,		//tempo restante
-	     output logic FlagTimer);   //flag para timer estourado
-
-
+module timer #(parameter WIDTH = 32)
+            (input  logic             clk_1MHz, reset,
+             input  logic             WriteData, MemWrite,
+             input  logic [WIDTH-1:0} Vin,  //tempo a ser contado
+	     output logic [WIDTH-1:0} Vout, //tempo restante
+	     output logic FlagTimer);       //flag para timer estourado
+             
+  logic [WIDTH-1:0] count;
+  logic [WIDTH-1:0] i;
+  logic contando;
+  always_ff @(posedge clk_1MHz or posedge reset) begin
+        if (reset) begin
+            count <= 0;
+            i <= 0;
+            contando <= 0;
+            FlagTimer <= 0;
+	end else if () begin  //falta implementar indicação para ativar timer
+	    count <= Vin;     //count irá receber o valor do timer
+            contando <= 1;    //indica que a contagem de tempo irá iniciar
+            FlagTimer <= 0;
+        end else if (running && count > 0) begin
+            i <= i + 1;
+            if (count == i) begin
+                FlagTimer <= 1; //muda a flag do timer para alto, ou seja, tempo esgotado/estourado
+                contando <= 0;  //indica que a contagem acabou
+            end
+        end
+  end
+  assign Vout = i; //Vout recebe o valor atual da contagem
 endmodule
 
 module top(input  logic        clk, reset, 
