@@ -78,30 +78,6 @@ module testbench();
   logic        clk;
   logic        reset;
 
-  //Extra
-
-  logic         timer_clk;
-  logic [31:0]  timer_target;
-  logic         timer_load;
-  logic [31:0]  timer_count;
-  logic         timer_done;
-
-  initial begin
-
-    timer_clk = 0;
-    forever #0.5 timer_clk = ~timer_clk;
-
-  end
-
-  timer my_timer (.clk(timer_clk),
-                  .reset(reset),
-                  .target_in(timer_target),
-                  .load_target(timer_load),
-                  .count_out(timer_count),
-                  .timer_done(timer_done));
-
-  //Extra
-
   logic [31:0] WriteData, DataAdr;
   logic        MemWrite;
 
@@ -132,8 +108,7 @@ module testbench();
           $stop;
         end
       end
-    end  
-      
+    end       
 endmodule
 
 module top(input  logic        clk, reset, 
@@ -514,75 +489,4 @@ module alu(input  logic [31:0] a, b,
                     ~(a[31] ^ b[31] ^ ALUControl[0]) & 
                     (a[31] ^ sum[31]); 
   assign ALUFlags    = {neg, zero, carry, overflow};
-endmodule
-
-module timer (input logic clk, reset,
-              input logic [31:0] target_in,
-              input logic load_target,
-              output logic [31:0] count_out,
-              output logic timer_done);
-
-  logic [31:0] count;
-  logic running;
-
-  always_ff @(posedge clk or posedge reset) begin
-
-    if (reset) begin
-
-      count       <= 32'd0;
-      timer_done  <= 1'b0;
-      running     <= 1'b0;
-
-    end else begin
-
-      if (load_target) begin
-
-        count       <= 32'd0;
-        running     <= 1'b1;
-        timer_done  <= 1'b0;
-
-      end else if (running) begin
-
-       count <= count + 1;
-
-       if (count >= taget_in) begin
-
-         running     <= 1'b0;
-          timer_done  <= 1'b1;
-
-       end
-     end
-    end
-  end  
-
-  assign count_out = count;
-
-endmodule
-
-module iomap(input logic clk, reset,
-             input logic [31:0] addr, wd,
-             input logic we,
-             output logic [31:0] rd,
-             output logic [31:0] timer_target,
-             output logic timer_load,
-             input logic [31:0] timer_count,
-             input logic timer_done);
-
-  always_comb begin
-
-    if(addr == 32'h000000F0 && we) begin
-
-      timer_load = 1'b1;
-      timer_target = wd;
-
-    end else begin
-
-      timer_load = 1'b0;
-      timer_target = 32'd0;
-
-    end
-  end
-
-  assign rd = (addr == 32'h000000F4) ? timer_count : 32'dx;
-
 endmodule
