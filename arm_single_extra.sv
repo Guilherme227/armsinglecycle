@@ -119,11 +119,32 @@ module testbench();
       end
     end
 
-  parameter posicao_memoria_timer = 500;
+  
+
+  parameter posicao_memoria_timer = 500; //força o endereço a ser a posição de memoria 500
   always_comb begin
-        ativa_timer = (MemWrite && (ALUResult == posicao_memoria_timer));
+        ativa_timer = (MemWrite && (ALUResult == posicao_memoria_timer)); //ativa o timer se MemWrite=1 e ALUResult = 500
         Vin = WriteData;
-        ReadData = (ALUResult == posicao_memoria_timer) ? Vout : 32'bz;
+        ReadData = (ALUResult == posicao_memoria_timer) ? Vout : 32'bz;   //verifica se a CPU deseja acessar o timer, 
+                                                                          //se verdadeiro ReadData = Vout
+    end									  //se falso recebe um valor aleatorio
+  
+  //Teste para força ro timer para teste antes de implementar um LDR no memfile.s
+  initial begin
+        clk_1MHz = 0;
+        reset = 1;
+        #10 reset = 0;
+
+        // Simulação da CPU escrevendo no Timer
+        WriteData = 5000000;               //Carrega valor inicial no Timer, 5*10^6 representa 5 segundos
+        ALUResult = posicao_memoria_timer; //Forçando o ALUResult a ser 500 para o teste
+        MemWrite = 1;                      //Força MemWrite = 1, ou seja, simulamos que um STR está acontecendo
+        #10 MemWrite = 0;
+
+        
+        wait (FlagTimer == 1); //se FlagTimer = 1, o tempo acabou
+        $display("Contagem do timer chegou ao valor desejado. Contagem final: %d", Vout);  //printa que o tempo solicitado acabou
+        $stop;
     end
 
 endmodule
