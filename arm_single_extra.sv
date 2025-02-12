@@ -121,9 +121,9 @@ module testbench();
 
   parameter posicao_memoria_timer = 500;
   always_comb begin
-        ative_timer = (MemWrite && (ALUResult == TIMER_ADDR));
+        ativa_timer = (MemWrite && (ALUResult == posicao_memoria_timer));
         Vin = WriteData;
-        ReadData = (ALUResult == TIMER_ADDR) ? Vout : 32'bz;
+        ReadData = (ALUResult == posicao_memoria_timer) ? Vout : 32'bz;
     end
 
 endmodule
@@ -145,7 +145,7 @@ module timer #(parameter WIDTH = 32)
             i <= 0;
             contando <= 0;
             FlagTimer <= 0;
-	end else if () begin  //falta implementar indicação para ativar timer
+	end else if (ativa_timer) begin  //implementada condição para ativar o timer
 	    count <= Vin;     //count irá receber o valor do timer
             contando <= 1;    //indica que a contagem de tempo irá iniciar
             FlagTimer <= 0;
