@@ -81,7 +81,7 @@ module testbench();
 
   logic [31:0] WriteData, DataAdr; ReadData, ALUResult;
   logic        MemWrite;
-  logic	       we;
+  logic	       ativa_timer;
   logic [31:0] Vin, Vout;
   logic	       FlagTimer;
 
@@ -118,11 +118,20 @@ module testbench();
         end
       end
     end
+
+  parameter posicao_memoria_timer = 500;
+  always_comb begin
+        ative_timer = (MemWrite && (ALUResult == TIMER_ADDR));
+        Vin = WriteData;
+        ReadData = (ALUResult == TIMER_ADDR) ? Vout : 32'bz;
+    end
+
 endmodule
 
 module timer #(parameter WIDTH = 32)
             (input  logic             clk_1MHz, reset,
              input  logic             WriteData, MemWrite,
+	     input  logic             ativa_timer, //se estiver em nivel alto ativa o timer
              input  logic [WIDTH-1:0} Vin,  //tempo a ser contado
 	     output logic [WIDTH-1:0} Vout, //tempo restante
 	     output logic FlagTimer);       //flag para timer estourado
